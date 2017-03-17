@@ -43,7 +43,7 @@ function spawnDaemon (num, callback) {
   })
 
   setTimeout(() => {
-    const daemon = new HTTPAPI(node.repo.path())
+    const daemon = new HTTPAPI(node._repo)
     nodes.push(daemon)
     setTimeout(() => daemon.start(callback), 400)
   }, 800)

@@ -9,6 +9,7 @@ const addDefaultAssets = require('./init-assets')
 
 module.exports = function init (self) {
   return (opts, callback) => {
+    self.log('init')
     if (typeof opts === 'function') {
       callback = opts
       opts = {}

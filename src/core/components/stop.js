@@ -1,5 +1,7 @@
 'use strict'
 
+const series = require('async/series')
+
 module.exports = (self) => {
   return (callback) => {
     callback = callback || function noop () {}
@@ -7,23 +9,22 @@ module.exports = (self) => {
     self._blockService.goOffline()
     self._bitswap.stop()
 
-    if (self._options.EXPERIMENTAL.pubsub) {
-      self._pubsub.stop(next)
-    } else {
-      next()
-    }
-
-    function next (err) {
+    series([
+      (cb) => {
+        if (self._options.EXPERIMENTAL.pubsub) {
+          self._pubsub.stop(cb)
+        } else {
+          cb()
+        }
+      },
+      (cb) => self.libp2p.stop(cb),
+      (cb) => self._repo.close(cb)
+    ], (err) => {
       if (err) {
         return callback(err)
       }
-      self.libp2p.stop((err) => {
-        if (err) {
-          return callback(err)
-        }
-        self.emit('stop')
-        callback()
-      })
-    }
+      self.emit('stop')
+      callback()
+    })
   }
 }

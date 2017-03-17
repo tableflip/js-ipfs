@@ -100,11 +100,15 @@ class IPFS extends EventEmitter {
     // Boot
     series([
       (cb) => {
-        this._options.init
-          ? this.init(Object.assign({
+        if (this._options.init) {
+          this.init(Object.assign({
             bits: this._options.init.bits || 2048
           }, this._options.init), cb)
-        : this._repo.open(cb)
+        } else if (this._repo.closed) {
+          this._repo.open(cb)
+        } else {
+          cb()
+        }
       },
       (cb) => {
         if (!(this._options.config &&
@@ -112,7 +116,7 @@ class IPFS extends EventEmitter {
               this._options.init)) {
           return cb()
         }
-
+        this.log('setting config')
         this._repo.config.get((err, config) => {
           if (err) {
             return cb(err)
@@ -123,14 +127,19 @@ class IPFS extends EventEmitter {
         })
       },
       (cb) => {
-        this._options.start
-          ? this.start(cb)
-          : cb()
+        if (this._options.start) {
+          this.log('starting')
+          this.start(cb)
+        } else {
+          cb()
+        }
       }
     ], (err) => {
       if (err) {
+        this.log('error starting: %s', err)
         this.emit('error', err)
       }
+      this.log('created core')
     })
   }
 }

@@ -33,6 +33,7 @@ class Factory {
 
     let daemon
     let ctl
+    let node
 
     series([
       (cb) => {
@@ -56,7 +57,7 @@ class Factory {
       },
       (cb) => {
         // create the node
-        IPFS.createNode({
+        node = new IPFS({
           repo: repoPath,
           start: false,
           config: config,
@@ -69,7 +70,7 @@ class Factory {
       },
       (cb) => {
         // create the daemon
-        daemon = new HTTPAPI(repoPath)
+        daemon = new HTTPAPI(node._repo)
         daemon.repoPath = repoPath
         this.daemonsSpawned.push(daemon)
 
