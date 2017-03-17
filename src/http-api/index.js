@@ -7,7 +7,6 @@ const fs = require('fs')
 const path = require('path')
 const IPFSRepo = require('ipfs-repo')
 const multiaddr = require('multiaddr')
-const Store = require('fs-pull-blob-store')
 const setHeader = require('hapi-set-header')
 const once = require('once')
 
@@ -28,7 +27,7 @@ function HttpApi (repo) {
 
   this.start = (callback) => {
     if (typeof repo === 'string') {
-      repo = new IPFSRepo(repo, {stores: Store})
+      repo = new IPFSRepo(repo)
     }
 
     let apiFilePath

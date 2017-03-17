@@ -30,25 +30,24 @@ module.exports = {
     const log = utils.createLogger(true)
     log(`initializing ipfs node at ${path}`)
 
-    const repo = new Repo(path, {
-      stores: Store
-    })
+    const repo = new Repo(path)
 
     const node = new IPFS({
       repo: repo,
-      init: false,
+      init: {
+        bits: argv.bits,
+        emptyRepo: argv.emptyRepo,
+        log: log
+      },
       start: false
     })
 
-    node.init({
-      bits: argv.bits,
-      emptyRepo: argv.emptyRepo,
-      log: log
-    }, (err) => {
-      if (err) {
-        console.error(err.toString())
-        process.exit(1)
-      }
+    node.on('error', (err) => {
+      console.error(err.toString())
+      process.exit(1)
+    })
+    node.once('init', () => {
+      process.exit()
     })
   }
 }

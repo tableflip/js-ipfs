@@ -44,7 +44,7 @@ module.exports = function init (self) {
 
         self._repo.init(config, cb)
       },
-      (cb) => self._repo.open(cb),
+      (_, cb) => self._repo.open(cb),
       (cb) => {
         if (opts.emptyRepo) {
           return cb(null, true)
@@ -67,6 +67,12 @@ module.exports = function init (self) {
           cb(null, true)
         })
       }
-    ], callback)
+    ], (err) => {
+      if (err) {
+        return callback(err)
+      }
+      self.emit('init')
+      callback()
+    })
   }
 }

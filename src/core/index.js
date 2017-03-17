@@ -101,8 +101,10 @@ class IPFS extends EventEmitter {
     series([
       (cb) => {
         this._options.init
-          ? this.init({ bits: this._options.init.bits || 2048 }, cb)
-          : cb()
+          ? this.init(Object.assign({
+            bits: this._options.init.bits || 2048
+          }, this._options.init), cb)
+        : this._repo.open(cb)
       },
       (cb) => {
         if (!(this._options.config &&
