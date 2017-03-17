@@ -7,9 +7,6 @@ const isNode = require('detect-node')
 
 const addDefaultAssets = require('./init-assets')
 
-// Current repo version
-const VERSION = '3'
-
 module.exports = function init (self) {
   return (opts, callback) => {
     if (typeof opts === 'function') {
@@ -45,9 +42,9 @@ module.exports = function init (self) {
         opts.log('done')
         opts.log('peer identity: ' + config.Identity.PeerID)
 
-        self._repo.version.set(VERSION, cb)
+        self._repo.init(config, cb)
       },
-      (cb) => self._repo.config.set(config, cb),
+      (cb) => self._repo.open(cb),
       (cb) => {
         if (opts.emptyRepo) {
           return cb(null, true)
