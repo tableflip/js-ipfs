@@ -68,12 +68,6 @@ module.exports = function init (self) {
           cb(null, true)
         })
       }
-    ], (err) => {
-      if (err) {
-        return callback(err)
-      }
-      self.emit('init')
-      callback()
-    })
+    ], callback)
   }
 }

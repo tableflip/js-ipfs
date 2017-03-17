@@ -104,10 +104,19 @@ class IPFS extends EventEmitter {
           this.init(Object.assign({
             bits: this._options.init.bits || 2048
           }, this._options.init), cb)
-        } else if (this._repo.closed) {
-          this._repo.open(cb)
-        } else {
+        } else if (!this._repo.closed) {
           cb()
+        } else {
+          this._repo.exists((err, exists) => {
+            if (err) {
+              return cb(err)
+            }
+            if (exists) {
+              return this._repo.open(cb)
+            }
+
+            cb()
+          })
         }
       },
       (cb) => {

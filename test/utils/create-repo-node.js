@@ -11,7 +11,8 @@ function createTempRepo (repoPath) {
 
   repo.teardown = (done) => {
     series([
-      (cb) => repo.close(cb),
+      // ignore err, might have been closed already
+      (cb) => repo.close((err) => cb()),
       (cb) => {
         clean(repoPath)
         cb()
