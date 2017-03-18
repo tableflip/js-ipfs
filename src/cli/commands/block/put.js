@@ -29,7 +29,7 @@ function addBlock (data, opts) {
         }
         cb(null, cid)
       },
-      (cid, cb) => ipfs.block.put(new Block(data), cid, cb)
+      (cid, cb) => ipfs.block.put(new Block(data, cid), cb)
     ], (err) => {
       if (err) { throw err }
 
