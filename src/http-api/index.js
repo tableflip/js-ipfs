@@ -115,9 +115,7 @@ function HttpApi (repo) {
         console.log('Gateway (readonly) is listening on: %s', gateway.info.ma)
 
         // for the CLI to know the where abouts of the API
-        this.node._repo.setApiAddress(api.info.ma)
-        log('started')
-        cb()
+        this.node._repo.setApiAddress(api.info.ma, cb)
       }
     ], callback)
   }

@@ -27,15 +27,18 @@ module.exports = function init (self) {
       // Verify repo does not yet exist.
       (cb) => self._repo.exists(cb),
       (exists, cb) => {
+        self.log('repo exists?', exists)
         if (exists === true) {
           return cb(new Error('repo already exists'))
         }
 
         // Generate peer identity keypair + transform to desired format + add to config.
         opts.log(`generating ${opts.bits}-bit RSA keypair...`, false)
+        self.log('generating peer id: %s bits', opts.bits)
         peerId.create({bits: opts.bits}, cb)
       },
       (keys, cb) => {
+        self.log('identity generated')
         config.Identity = {
           PeerID: keys.toB58String(),
           PrivKey: keys.privKey.bytes.toString('base64')
@@ -47,6 +50,7 @@ module.exports = function init (self) {
       },
       (_, cb) => self._repo.open(cb),
       (cb) => {
+        self.log('repo opened')
         if (opts.emptyRepo) {
           return cb(null, true)
         }
@@ -68,6 +72,13 @@ module.exports = function init (self) {
           cb(null, true)
         })
       }
-    ], callback)
+    ], (err, res) => {
+      if (err) {
+        self.log('init failed', err)
+        return callback(err)
+      }
+      self.log('init done')
+      callback(null, res)
+    })
   }
 }

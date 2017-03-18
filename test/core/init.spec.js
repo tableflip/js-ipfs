@@ -18,7 +18,7 @@ const IPFS = require('../../src/core')
 // in the browser
 const createTempRepo = require('../utils/create-repo-node.js')
 
-describe.only('init', () => {
+describe('init', () => {
   if (!isNode) { return }
 
   let ipfs

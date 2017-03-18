@@ -31,14 +31,14 @@ module.exports = function block (self) {
             cb(null, new Block(block, new CID(multihash)))
           })
         },
-        (block, cb) => self._blockService.put(block, cb)
-      ], (err) => {
-        if (err) {
-          return callback(err)
-        }
+        (block, cb) => self._blockService.put(block, (err) => {
+          if (err) {
+            return cb(err)
+          }
+          cb(null, block)
+        })
+      ], callback)
 
-        callback(null, block)
-      })
     },
     rm: (cid, callback) => {
       cid = cleanCid(cid)
