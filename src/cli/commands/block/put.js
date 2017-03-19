@@ -14,7 +14,7 @@ function addBlock (data, opts) {
   waterfall([
     (cb) => multihashing(data, opts.mhtype || 'sha2-256', cb),
     (multihash, cb) => {
-      if (!opts.version || opts.version !== 0) {
+      if (opts.format !== 'dag-pb' || opts.version !== 0) {
         cid = new CID(1, opts.format || 'dag-pb', multihash)
       } else {
         cid = new CID(0, 'dag-pb', multihash)
@@ -48,6 +48,11 @@ module.exports = {
     mhlen: {
       describe: 'multihash hash length',
       default: undefined
+    },
+    version: {
+      describe: 'cid version',
+      type: 'number',
+      default: 0
     }
   },
 

@@ -36,7 +36,7 @@ utils.getIPFS((err, ipfs, cleanup) => {
   // finalize cli setup
   cli // eslint-disable-line
     .help()
-    .strict()
+    .strict(false)
     .completion()
     .parse(process.argv.slice(2), {
       ipfs: ipfs

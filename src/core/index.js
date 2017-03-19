@@ -29,13 +29,11 @@ class IPFS extends EventEmitter {
 
     extend(this._options, options)
 
-    if (typeof options.init === 'boolean' &&
-        options.init === false) {
+    if (options.init === false) {
       this._options.init = false
     }
 
-    if (!(typeof options.start === 'boolean' &&
-          options.start === false)) {
+    if (!(options.start === false)) {
       this._options.start = true
     }
 
@@ -101,9 +99,10 @@ class IPFS extends EventEmitter {
     series([
       (cb) => {
         if (this._options.init) {
+          const opts = typeof this._options.init === 'object' ? this._options.init : {}
           this.init(Object.assign({
             bits: this._options.init.bits || 2048
-          }, this._options.init), cb)
+          }, opts), cb)
         } else if (!this._repo.closed) {
           cb()
         } else {
@@ -120,19 +119,22 @@ class IPFS extends EventEmitter {
         }
       },
       (cb) => {
-        if (!(this._options.config &&
-              typeof this._options.config === 'object' &&
-              this._options.init)) {
+        if (this._repo.closed) {
           return cb()
         }
+        if (!(this._options.config &&
+              typeof this._options.config === 'object')) {
+          return cb()
+        }
+
         this.log('setting config')
-        this._repo.config.get((err, config) => {
+        this.config.get((err, config) => {
           if (err) {
             return cb(err)
           }
 
           extend(config, this._options.config)
-          this._repo.config.set(config, cb)
+          this.config.replace(config, cb)
         })
       },
       (cb) => {

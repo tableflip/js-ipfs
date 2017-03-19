@@ -65,7 +65,8 @@ class Factory {
             pubsub: true
           }
         })
-        node.once('init', cb)
+        node.once('error', cb)
+        node.once('ready', cb)
       },
       (cb) => {
         // create the daemon

@@ -2,7 +2,7 @@
 
 const Repo = require('ipfs-repo')
 const IPFS = require('../../core')
-const utils = require('../../utils')
+const utils = require('../utils')
 
 module.exports = {
   command: 'init',

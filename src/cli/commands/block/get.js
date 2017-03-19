@@ -10,7 +10,9 @@ module.exports = {
   builder: {},
 
   handler (argv) {
-    argv.ipfs.block.get(new CID(argv.key), (err, block) => {
+    const cid = new CID(argv.key)
+
+    argv.ipfs.block.get(cid, (err, block) => {
       if (err) {
         throw err
       }

@@ -1,8 +1,5 @@
 'use strict'
 
-const debug = require('debug')
-const log = debug('cli:config')
-log.error = debug('cli:config:error')
 module.exports = {
   command: 'config <key> [value]',
 
@@ -14,17 +11,21 @@ module.exports = {
       .options({
         bool: {
           type: 'boolean',
-          default: false
+          default: false,
+          global: false
         },
         json: {
           type: 'boolean',
-          default: false
+          default: false,
+          global: false
         }
       })
   },
 
   handler (argv) {
-    if (argv._handled) return
+    if (argv._handled) {
+      return
+    }
     argv._handled = true
 
     const bool = argv.bool
@@ -36,7 +37,6 @@ module.exports = {
       // Get the value of a given key
       argv.ipfs.config.get(key, (err, value) => {
         if (err) {
-          log.error(err)
           throw new Error('failed to read the config')
         }
 
@@ -55,14 +55,12 @@ module.exports = {
         try {
           value = JSON.parse(value)
         } catch (err) {
-          log.error(err)
           throw new Error('invalid JSON provided')
         }
       }
 
       argv.ipfs.config.set(key, value, (err) => {
         if (err) {
-          log.error(err)
           throw new Error('failed to read the config')
         }
       })
