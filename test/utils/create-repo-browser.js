@@ -14,10 +14,7 @@ function createTempRepo (repoPath) {
   const repo = new IPFSRepo(repoPath)
 
   repo.teardown = (done) => {
-    repo.close((err) => {
-      if (err) {
-        return done(err)
-      }
+    repo.close(() => {
       idb.deleteDatabase(repoPath)
       idb.deleteDatabase(repoPath + '/blocks')
       done()

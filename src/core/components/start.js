@@ -17,6 +17,13 @@ module.exports = (self) => {
     }
 
     series([
+      (cb) => {
+        if (self._repo.closed) {
+          self._repo.open(cb)
+        } else {
+          cb()
+        }
+      },
       (cb) => self.preStart(cb),
       (cb) => self.libp2p.start(cb)
     ], (err) => {
