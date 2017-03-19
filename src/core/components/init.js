@@ -77,6 +77,7 @@ module.exports = function init (self) {
         self.log('init failed', err)
         return callback(err)
       }
+      self.emit('init')
       self.log('init done')
       callback(null, res)
     })

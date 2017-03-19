@@ -48,7 +48,7 @@ function Factory () {
         }
       })
 
-      node.on('start', () => {
+      node.once('start', () => {
         nodes.push({ repo: repo, ipfs: node })
         callback(null, node)
       })

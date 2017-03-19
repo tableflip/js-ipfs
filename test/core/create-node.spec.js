@@ -95,7 +95,7 @@ describe('create node', () => {
       repo: createTempRepo(),
       init: false
     })
-    node.on('error', (err) => {
+    node.once('error', (err) => {
       expect(err).to.exist()
       done()
     })
@@ -125,38 +125,32 @@ describe('create node', () => {
   })
 
   it('init: true, start: false', (done) => {
-    // TODO investigate why this test likes to fail in the browser in travis
-    if (!isNode) {
-      return done()
-    }
     const node = new IPFS({
       repo: createTempRepo(),
       init: true,
       start: false
     })
 
-    setTimeout(() => {
-      node.on('stop', () => done())
-      node.on('start', () => node.stop())
+    node.once('error', done)
+    node.once('stop', done)
+    node.once('start', () => node.stop())
+
+    node.once('init', () => {
       node.start()
-    }, 1000)
+    })
   })
 
   it('init: true, start: false, use callback', (done) => {
-    // TODO investigate why this test likes to fail in the browser in travis
-    if (!isNode) {
-      return done()
-    }
-
     const node = new IPFS({
       repo: createTempRepo(),
       init: true,
       start: false
     })
 
-    setTimeout(() => {
+    node.once('error', done)
+    node.once('init', () => {
       node.start(() => node.stop(done))
-    }, 1000)
+    })
   })
 
   it('overload config', (done) => {

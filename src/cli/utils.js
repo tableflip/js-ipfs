@@ -36,7 +36,7 @@ function getAPICtl () {
 
 exports.getIPFS = (callback) => {
   if (isDaemonOn()) {
-    return callback(null, getAPICtl())
+    return callback(null, getAPICtl(), (cb) => cb())
   }
 
   const node = new IPFS({
@@ -48,7 +48,16 @@ exports.getIPFS = (callback) => {
     }
   })
 
-  node.preStart(() => callback(null, node))
+  const cleanup = (cb) => {
+    if (node && node._repo && !node._repo.closed) {
+      node._repo.close(() => cb())
+    } else {
+      cb()
+    }
+  }
+  node.once('ready', () => {
+    node.preStart(() => callback(null, node, cleanup))
+  })
 }
 
 exports.getRepoPath = () => {

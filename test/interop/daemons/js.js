@@ -50,7 +50,7 @@ class JsDaemon {
         repo: this.path
       })
     } else {
-      const repo = new IPFSRepo(this.path, {stores: require('fs-pull-blob-store')})
+      const repo = new IPFSRepo(this.path)
       this.ipfs = new IPFS({
         repo: repo,
         EXPERIMENTAL: {

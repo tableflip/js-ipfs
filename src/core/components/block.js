@@ -38,7 +38,6 @@ module.exports = function block (self) {
           cb(null, block)
         })
       ], callback)
-
     },
     rm: (cid, callback) => {
       cid = cleanCid(cid)

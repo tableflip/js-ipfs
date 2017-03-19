@@ -3,15 +3,10 @@
 const series = require('async/series')
 const Hapi = require('hapi')
 const debug = require('debug')
-const fs = require('fs')
-const path = require('path')
 const IPFSRepo = require('ipfs-repo')
 const multiaddr = require('multiaddr')
 const setHeader = require('hapi-set-header')
 const once = require('once')
-
-const log = debug('jsipfs:api')
-log.error = debug('jsipfs:api:error')
 
 const IPFS = require('../core')
 const errorHandler = require('./error-handler')
@@ -25,13 +20,14 @@ function HttpApi (repo) {
   this.node = undefined
   this.server = undefined
 
+  this.log = debug('jsipfs:http-api')
+  this.log.error = debug('jsipfs:http-api:error')
+
   this.start = (callback) => {
-    log('starting')
+    this.log('starting')
     if (typeof repo === 'string') {
       repo = new IPFSRepo(repo)
     }
-
-    let apiFilePath
 
     series([
       (cb) => {
@@ -52,14 +48,14 @@ function HttpApi (repo) {
         cb = once(cb)
 
         this.node.once('error', (err) => {
-          log('error starting core', err)
+          this.log('error starting core', err)
           err.code = 'ENOENT'
           cb(err)
         })
         this.node.once('start', cb)
       },
       (cb) => {
-        log('fetching config')
+        this.log('fetching config')
         this.node._repo.config.get((err, config) => {
           if (err) {
             return callback(err)
@@ -88,7 +84,7 @@ function HttpApi (repo) {
           })
 
           // Nicer errors
-          errorHandler(this.server)
+          errorHandler(this, this.server)
 
           // load routes
           require('./routes')(this.server)
@@ -121,12 +117,13 @@ function HttpApi (repo) {
   }
 
   this.stop = (callback) => {
-    log('stopping')
+    this.log('stopping')
     series([
       (cb) => this.server.stop(cb),
       (cb) => this.node.stop(cb)
     ], (err) => {
       if (err) {
+        this.log.error(err)
         console.log('There were errors stopping')
       }
       callback()

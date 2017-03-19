@@ -111,7 +111,7 @@ class IPFS extends EventEmitter {
             if (err) {
               return cb(err)
             }
-            if (exists) {
+            if (exists && this._repo.closed) {
               return this._repo.open(cb)
             }
 
@@ -148,6 +148,7 @@ class IPFS extends EventEmitter {
         this.log('error starting: %s', err)
         this.emit('error', err)
       }
+      this.emit('ready')
       this.log('created core')
     })
   }

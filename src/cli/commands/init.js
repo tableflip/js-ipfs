@@ -2,8 +2,7 @@
 
 const Repo = require('ipfs-repo')
 const IPFS = require('../../core')
-const Store = require('fs-pull-blob-store')
-const utils = require('../utils')
+const utils = require('../../utils')
 
 module.exports = {
   command: 'init',
@@ -30,25 +29,23 @@ module.exports = {
     const log = utils.createLogger(true)
     log(`initializing ipfs node at ${path}`)
 
-    const repo = new Repo(path, {
-      stores: Store
-    })
-
     const node = new IPFS({
-      repo: repo,
+      repo: new Repo(path),
       init: false,
       start: false
     })
 
-    node.init({
-      bits: argv.bits,
-      emptyRepo: argv.emptyRepo,
-      log: log
-    }, (err) => {
-      if (err) {
-        console.error(err.toString())
-        process.exit(1)
-      }
+    node.once('ready', () => {
+      node.init({
+        bits: argv.bits,
+        emptyRepo: argv.emptyRepo,
+        log: log
+      }, (err) => {
+        if (err) {
+          console.error(err.toString())
+          process.exit(1)
+        }
+      })
     })
   }
 }
