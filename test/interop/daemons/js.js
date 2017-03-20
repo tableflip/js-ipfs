@@ -64,17 +64,15 @@ class JsDaemon extends EventEmitter {
 
     this._started = false
 
-    this.ipfs.once('ready', () => {
-      this.node = new HTTPAPI(this.ipfs._repo)
-      this.node.start((err) => {
-        if (err) {
-          throw err
-        }
-        this._started = true
-        this.api = new IPFSAPI(this.node.apiMultiaddr)
+    this.node = new HTTPAPI(this.ipfs._repo)
+    this.node.start((err) => {
+      if (err) {
+        throw err
+      }
+      this._started = true
+      this.api = new IPFSAPI(this.node.apiMultiaddr)
 
-        this.emit('start')
-      })
+      this.emit('start')
     })
   }
 

@@ -16,16 +16,16 @@ let nodes = []
 function spawnDaemon (num, callback) {
   num = leftPad(num, 3, 0)
 
-  const node = new IPFS({
-    repo: createTempRepo(),
-    init: {
-      bits: 1024
-    },
-    start: false,
-    EXPERIMENTAL: {
-      pubsub: true
-    },
-    config: {
+  // const node = new IPFS({
+  //   repo: createTempRepo(),
+  //   init: {
+  //     bits: 1024
+  //   },
+  //   start: false,
+  //   EXPERIMENTAL: {
+  //     pubsub: true
+  //   },
+    const config =  {
       Addresses: {
         Swarm: [
           `/ip4/127.0.0.1/tcp/10${num}`,
@@ -40,13 +40,11 @@ function spawnDaemon (num, callback) {
         }
       }
     }
-  })
+  // })
 
-  setTimeout(() => {
-    const daemon = new HTTPAPI(node._repo)
-    nodes.push(daemon)
-    setTimeout(() => daemon.start(callback), 400)
-  }, 800)
+  const daemon = new HTTPAPI(createTempRepo(), config)
+  nodes.push(daemon)
+  daemon.start(true, callback)
 }
 
 gulp.task('libnode:start', (done) => {

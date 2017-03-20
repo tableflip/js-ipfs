@@ -35,17 +35,15 @@ module.exports = {
       start: false
     })
 
-    node.once('ready', () => {
-      node.init({
-        bits: argv.bits,
-        emptyRepo: argv.emptyRepo,
-        log: log
-      }, (err) => {
-        if (err) {
-          console.error(err.toString())
-          process.exit(1)
-        }
-      })
+    node.init({
+      bits: argv.bits,
+      emptyRepo: argv.emptyRepo,
+      log: log
+    }, (err) => {
+      if (err) {
+        console.error(err.toString())
+        process.exit(1)
+      }
     })
   }
 }

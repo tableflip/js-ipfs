@@ -9,11 +9,13 @@ const addDefaultAssets = require('./init-assets')
 
 module.exports = function init (self) {
   return (opts, callback) => {
-    self.log('init')
     if (typeof opts === 'function') {
       callback = opts
       opts = {}
     }
+
+    self.state.init()
+    self.log('init')
 
     opts.emptyRepo = opts.emptyRepo || false
     opts.bits = Number(opts.bits) || 2048
@@ -48,7 +50,7 @@ module.exports = function init (self) {
 
         self._repo.init(config, cb)
       },
-      (_, cb) => self._repo.open(cb),
+      (cb) => self._repo.open(cb),
       (cb) => {
         self.log('repo opened')
         if (opts.emptyRepo) {
@@ -77,8 +79,10 @@ module.exports = function init (self) {
         self.log('init failed', err)
         return callback(err)
       }
+      self._state.daemon = 'initialized'
       self.emit('init')
       self.log('init done')
+      self.state.initialized()
       callback(null, res)
     })
   }

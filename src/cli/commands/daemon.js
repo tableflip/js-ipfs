@@ -1,9 +1,6 @@
 'use strict'
 
 const HttpAPI = require('../../http-api')
-const debug = require('debug')
-const log = debug('cli:daemon')
-log.error = debug('cli:daemon:error')
 
 let httpAPI
 

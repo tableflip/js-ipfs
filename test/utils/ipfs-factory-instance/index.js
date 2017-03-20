@@ -77,8 +77,8 @@ function Factory () {
 
   this.dismantle = function (callback) {
     series([
-      (cb) => each(nodes((el, cb) => el.ipfs.stop(cb)), cb),
-      (cb) => each(nodes((el, cb) => el.repo.teardown(cb)), cb)
+      (cb) => each(nodes, (el, cb) => el.ipfs.stop(cb), cb),
+      (cb) => each(nodes, (el, cb) => el.repo.teardown(cb), cb)
     ], callback)
   }
 }

@@ -55,9 +55,12 @@ exports.getIPFS = (callback) => {
       cb()
     }
   }
-  node.once('ready', () => {
-    node.preStart(() => callback(null, node, cleanup))
+
+  node.on('error', (err) => {
+    throw err
   })
+
+  callback(null, node, cleanup)
 }
 
 exports.getRepoPath = () => {

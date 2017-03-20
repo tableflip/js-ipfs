@@ -16,18 +16,23 @@ function uriToMultiaddr (uri) {
   return `/ip4/${ipPort[0]}/tcp/${ipPort[1]}`
 }
 
-function HttpApi (repo) {
+function HttpApi (repo, config) {
   this.node = undefined
   this.server = undefined
 
   this.log = debug('jsipfs:http-api')
   this.log.error = debug('jsipfs:http-api:error')
 
-  this.start = (callback) => {
-    this.log('starting')
-    if (typeof repo === 'string') {
-      repo = new IPFSRepo(repo)
+  if (typeof repo === 'string') {
+    repo = new IPFSRepo(repo)
+  }
+
+  this.start = (init, callback) => {
+    if (typeof init === 'function') {
+      callback = init
+      init = false
     }
+    this.log('starting')
 
     series([
       (cb) => {
@@ -35,8 +40,9 @@ function HttpApi (repo) {
         try {
           this.node = new IPFS({
             repo: repo,
-            init: false,
+            init: init,
             start: true,
+            config: config,
             EXPERIMENTAL: {
               pubsub: true
             }
@@ -113,7 +119,10 @@ function HttpApi (repo) {
         // for the CLI to know the where abouts of the API
         this.node._repo.setApiAddress(api.info.ma, cb)
       }
-    ], callback)
+    ], (err) => {
+      this.log('done', err)
+      callback(err)
+    })
   }
 
   this.stop = (callback) => {

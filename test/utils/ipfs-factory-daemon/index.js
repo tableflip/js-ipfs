@@ -56,25 +56,27 @@ class Factory {
         })
       },
       (cb) => {
-        // create the node
-        node = new IPFS({
-          repo: repoPath,
-          start: false,
-          config: config,
-          EXPERIMENTAL: {
-            pubsub: true
-          }
-        })
-        node.once('error', cb)
-        node.once('ready', cb)
-      },
-      (cb) => {
+      //   // create the node
+      //   node = new IPFS({
+      //     repo: repoPath,
+      //     start: false,
+      //     config: config,
+      //     EXPERIMENTAL: {
+      //       pubsub: true
+      //     }
+      //   })
+      //   node.once('error', (err) => {
+      //     throw err
+      //   })
+      //   cb()
+      // },
+      // (cb) => {
         // create the daemon
-        daemon = new HTTPAPI(node._repo)
+        daemon = new HTTPAPI(repoPath, config)
         daemon.repoPath = repoPath
         this.daemonsSpawned.push(daemon)
 
-        daemon.start(cb)
+        daemon.start(true, cb)
       },
       (cb) => {
         ctl = IPFSAPI(daemon.apiMultiaddr)

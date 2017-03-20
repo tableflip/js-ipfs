@@ -28,6 +28,13 @@ aliases.forEach((alias) => {
   cli.command(alias.command, alias.describe, alias.builder, alias.handler)
 })
 
+const args = process.argv.slice(2)
+
+// Need to skip to avoid locking the daemon
+if (args[0] === 'daemon') {
+  return cli.help().strict(false).completion().parse(args)
+}
+
 utils.getIPFS((err, ipfs, cleanup) => {
   if (err) {
     throw err
@@ -38,7 +45,7 @@ utils.getIPFS((err, ipfs, cleanup) => {
     .help()
     .strict(false)
     .completion()
-    .parse(process.argv.slice(2), {
+    .parse(args, {
       ipfs: ipfs
     }, (err, argv, output) => {
       cleanup(() => {
