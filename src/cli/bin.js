@@ -31,7 +31,7 @@ aliases.forEach((alias) => {
 const args = process.argv.slice(2)
 
 // Need to skip to avoid locking the daemon
-if (args[0] === 'daemon') {
+if (args[0] === 'daemon' || args[0] === 'init') {
   return cli.help().strict(false).completion().parse(args)
 }
 

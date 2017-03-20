@@ -15,7 +15,7 @@ const IPFS = require('../../src/core')
 // in the browser
 const createTempRepo = require('../utils/create-repo-node.js')
 
-describe.only('create node', () => {
+describe('create node', () => {
   it('custom repoPath', (done) => {
     const node = new IPFS({
       repo: '/tmp/ipfs-repo-' + Math.random()
@@ -91,8 +91,7 @@ describe.only('create node', () => {
     })
   })
 
-  // this does not throw currently
-  it.skip('init: false errors (start default: true)', (done) => {
+  it('init: false errors (start default: true)', (done) => {
     const node = new IPFS({
       repo: createTempRepo(),
       init: false
@@ -137,9 +136,7 @@ describe.only('create node', () => {
     node.once('stop', done)
     node.once('start', () => node.stop())
 
-    node.once('init', () => {
-      node.start()
-    })
+    node.once('init', () => node.start())
   })
 
   it('init: true, start: false, use callback', (done) => {
@@ -181,19 +178,16 @@ describe.only('create node', () => {
     })
   })
 
-  it.only('start and stop, start and stop', (done) => {
+  it('start and stop, start and stop', (done) => {
     const node = new IPFS({
       repo: createTempRepo()
     })
-    const l = (text, inner) => {
-      console.log('doing ' + text)
-      return inner
-    }
+
     series([
-      (cb) => l('start', node.once('start', cb)),
-      (cb) => l('stop', node.stop(cb)),
-      (cb) => l('start', node.start(cb)),
-      (cb) => l('stop', node.stop(cb))
+      (cb) => node.once('start', cb),
+      (cb) => node.stop(cb),
+      (cb) => node.start(cb),
+      (cb) => node.stop(cb)
     ], done)
   })
 })

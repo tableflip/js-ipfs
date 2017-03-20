@@ -14,6 +14,21 @@ module.exports = function init (self) {
       opts = {}
     }
 
+    const done = (err, res) => {
+      if (err) {
+        self.emit('error', err)
+        return callback(err)
+      }
+
+      self.state.initialized()
+      self.emit('init')
+      callback(null, res)
+    }
+
+    if (self.state.state !== 'uninitalized') {
+      return done(new Error('Not able to init from state: ' + self.state.state))
+    }
+
     self.state.init()
     self.log('init')
 
@@ -74,16 +89,6 @@ module.exports = function init (self) {
           cb(null, true)
         })
       }
-    ], (err, res) => {
-      if (err) {
-        self.log('init failed', err)
-        return callback(err)
-      }
-      self._state.daemon = 'initialized'
-      self.emit('init')
-      self.log('init done')
-      self.state.initialized()
-      callback(null, res)
-    })
+    ], done)
   }
 }

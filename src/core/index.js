@@ -97,7 +97,6 @@ class IPFS extends EventEmitter {
     if (this._options.EXPERIMENTAL.pubsub) {
       this.log('EXPERIMENTAL pubsub is enabled')
     }
-
     this.state = require('./state')(this)
 
     boot(this)

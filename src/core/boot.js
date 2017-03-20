@@ -24,7 +24,10 @@ module.exports = (self) => {
       (cb) => self._repo.exists(cb),
       (exists, cb) => {
         if (exists && !repoOpen) {
-          return self._repo.open(cb)
+          return series([
+            (cb) => self._repo.open(cb),
+            (cb) => self.preStart(cb)
+          ], cb)
         }
         cb()
       }
@@ -35,6 +38,7 @@ module.exports = (self) => {
     if (err) {
       self.emit('error', err)
     }
+    self.emit('ready')
     self.log('boot:done', err)
   }
 
@@ -61,10 +65,10 @@ module.exports = (self) => {
 
     if (setConfig) {
       self.log('boot:setConfig')
-      // if (!hasRepo) {
-      //   console.log('WARNING, trying to set config on uninitialized repo, maybe forgot to set "init: true"')
-      // } else {
-      tasks.push((cb) => {
+      if (!hasRepo) {
+        console.log('WARNING, trying to set config on uninitialized repo, maybe forgot to set "init: true"')
+      } else {
+        tasks.push((cb) => {
           waterfall([
             (cb) => self.config.get(cb),
             (config, cb) => {
@@ -73,17 +77,17 @@ module.exports = (self) => {
             }
           ], cb)
         })
-      // }
+      }
     }
 
     if (doStart) {
       self.log('boot:doStart')
-      // if (!hasRepo) {
-      //   console.log('WARNING, trying to start ipfs node on uninitialized repo, maybe forgot to set "init: true"')
-      //   return done(new Error('Uninitalized repo'))
-      // } else {
+      if (!hasRepo) {
+        console.log('WARNING, trying to start ipfs node on uninitialized repo, maybe forgot to set "init: true"')
+        return done(new Error('Uninitalized repo'))
+      } else {
         tasks.push((cb) => self.start(cb))
-      // }
+      }
     }
 
     series(tasks, done)

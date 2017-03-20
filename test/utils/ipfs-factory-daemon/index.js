@@ -2,7 +2,6 @@
 
 const PeerId = require('peer-id')
 const IPFSAPI = require('ipfs-api')
-const IPFS = require('../../../src/core')
 const clean = require('../clean')
 const HTTPAPI = require('../../../src/http-api')
 const series = require('async/series')
@@ -33,7 +32,6 @@ class Factory {
 
     let daemon
     let ctl
-    let node
 
     series([
       (cb) => {
@@ -56,22 +54,6 @@ class Factory {
         })
       },
       (cb) => {
-      //   // create the node
-      //   node = new IPFS({
-      //     repo: repoPath,
-      //     start: false,
-      //     config: config,
-      //     EXPERIMENTAL: {
-      //       pubsub: true
-      //     }
-      //   })
-      //   node.once('error', (err) => {
-      //     throw err
-      //   })
-      //   cb()
-      // },
-      // (cb) => {
-        // create the daemon
         daemon = new HTTPAPI(repoPath, config)
         daemon.repoPath = repoPath
         this.daemonsSpawned.push(daemon)

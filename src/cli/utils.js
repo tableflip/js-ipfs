@@ -60,7 +60,9 @@ exports.getIPFS = (callback) => {
     throw err
   })
 
-  callback(null, node, cleanup)
+  node.once('ready', () => {
+    callback(null, node, cleanup)
+  })
 }
 
 exports.getRepoPath = () => {
