@@ -3,7 +3,6 @@
 const Node = require('libp2p-ipfs-nodejs')
 const promisify = require('promisify-es6')
 const get = require('lodash.get')
-const mapKeys = require('lodash.mapKeys')
 
 module.exports = function libp2p (self) {
   return {
@@ -21,10 +20,13 @@ module.exports = function libp2p (self) {
           bootstrap: get(config, 'Bootstrap'),
           dht: get(self._options, 'EXPERIMENTAL.dht'),
           modules: self._libp2pModules,
-          relay: get(config, 'Relay')
+          relay: {
+            circuit: {
+              enabled: get(config, 'Experimental.Relay.Circuit.Enabled'),
+              active: get(config, 'Experimental.Relay.Circuit.Active')
+            }
+          }
         }
-
-        options.relay = mapKeys(get(config, 'Relay'), (v, k) => k.toLowerCase())
 
         self._libp2pNode = new Node(self._peerInfo, self._peerInfoBook, options)
 
