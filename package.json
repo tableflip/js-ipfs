@@ -32,6 +32,7 @@
     "test:interop": "npm run test:interop:node",
     "test:interop:node": "mocha -t 60000 test/interop/node.js",
     "test:interop:browser": "mocha -t 60000 test/interop/browser.js",
+    "test:bootstrapers": "TEST_BOOTSTRAPERS=1 gulp test:browser",
     "test:benchmark": "echo \"Error: no benchmarks yet\" && exit 1",
     "test:benchmark:node": "echo \"Error: no benchmarks yet\" && exit 1",
     "test:benchmark:node:core": "echo \"Error: no benchmarks yet\" && exit 1",
