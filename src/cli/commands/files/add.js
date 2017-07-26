@@ -9,6 +9,7 @@ const paramap = require('pull-paramap')
 const zip = require('pull-zip')
 const toPull = require('stream-to-pull-stream')
 const utils = require('../../utils')
+const print = require('../../utils').print
 
 const WRAPPER = 'wrapper/'
 
@@ -34,6 +35,52 @@ function checkPath (inPath, recursive) {
   }
 
   return inPath
+}
+
+function addPipeline (index, addStream, list, wrapWithDirectory) {
+  pull(
+    zip(
+      pull.values(list),
+      pull(
+        pull.values(list),
+        paramap(fs.stat.bind(fs), 50)
+      )
+    ),
+    pull.map((pair) => ({
+      path: pair[0],
+      isDirectory: pair[1].isDirectory()
+    })),
+    pull.filter((file) => !file.isDirectory),
+    pull.map((file) => ({
+      path: file.path.substring(index, file.path.length),
+      originalPath: file.path
+    })),
+    pull.map((file) => ({
+      path: wrapWithDirectory ? path.join(WRAPPER, file.path) : file.path,
+      content: fs.createReadStream(file.originalPath)
+    })),
+    addStream,
+    pull.map((file) => ({
+      hash: file.hash,
+      path: wrapWithDirectory ? file.path.substring(WRAPPER.length) : file.path
+    })),
+    pull.collect((err, added) => {
+      if (err) {
+        throw err
+      }
+
+      sortBy(added, 'path')
+        .reverse()
+        .map((file) => {
+          const log = [ 'added', file.hash ]
+
+          if (file.path.length > 0) log.push(file.path)
+
+          return log.join(' ')
+        })
+        .forEach((msg) => print(msg))
+    })
+  )
 }
 
 module.exports = {
@@ -111,50 +158,4 @@ module.exports = {
       })
     })
   }
-}
-
-function addPipeline (index, addStream, list, wrapWithDirectory) {
-  pull(
-    zip(
-      pull.values(list),
-      pull(
-        pull.values(list),
-        paramap(fs.stat.bind(fs), 50)
-      )
-    ),
-    pull.map((pair) => ({
-      path: pair[0],
-      isDirectory: pair[1].isDirectory()
-    })),
-    pull.filter((file) => !file.isDirectory),
-    pull.map((file) => ({
-      path: file.path.substring(index, file.path.length),
-      originalPath: file.path
-    })),
-    pull.map((file) => ({
-      path: wrapWithDirectory ? path.join(WRAPPER, file.path) : file.path,
-      content: fs.createReadStream(file.originalPath)
-    })),
-    addStream,
-    pull.map((file) => ({
-      hash: file.hash,
-      path: wrapWithDirectory ? file.path.substring(WRAPPER.length) : file.path
-    })),
-    pull.collect((err, added) => {
-      if (err) {
-        throw err
-      }
-
-      sortBy(added, 'path')
-        .reverse()
-        .map((file) => {
-          const log = [ 'added', file.hash ]
-
-          if (file.path.length > 0) log.push(file.path)
-
-          return log.join(' ')
-        })
-        .forEach((msg) => console.log(msg))
-    })
-  )
 }
