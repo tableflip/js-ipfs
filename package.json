@@ -135,8 +135,6 @@
     "peer-book": "^0.4.0",
     "peer-id": "^0.8.7",
     "peer-info": "^0.9.3",
-    "prom-client": "^10.0.2",
-    "prometheus-gc-stats": "^0.5.0",
     "promisify-es6": "^1.0.2",
     "pull-file": "^1.0.0",
     "pull-paramap": "^1.2.2",
@@ -154,6 +152,10 @@
     "through2": "^2.0.3",
     "update-notifier": "^2.2.0",
     "yargs": "8.0.2"
+  },
+  "optionalDependencies": {
+    "prom-client": "^10.0.2",
+    "prometheus-gc-stats": "^0.5.0"
   },
   "contributors": [
     "Andrew de Andrade <andrew@deandrade.com.br>",
