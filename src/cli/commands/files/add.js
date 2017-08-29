@@ -37,7 +37,9 @@ function checkPath (inPath, recursive) {
   return inPath
 }
 
-function addPipeline (index, addStream, list, wrapWithDirectory) {
+function addPipeline (index, addStream, list, argv) {
+  const { wrapWithDirectory, quiet } = argv
+
   pull(
     zip(
       pull.values(list),
@@ -74,7 +76,7 @@ function addPipeline (index, addStream, list, wrapWithDirectory) {
         .map((file) => {
           const log = [ 'added', file.hash ]
 
-          if (file.path.length > 0) log.push(file.path)
+          if (!quiet && file.path.length > 0) log.push(file.path)
 
           return log.join(' ')
         })
@@ -89,10 +91,17 @@ module.exports = {
   describe: 'Add a file to IPFS using the UnixFS data format',
 
   builder: {
+    quiet: {
+      alias: 'q',
+      type: 'boolean',
+      default: false,
+      description: 'Write minimal output'
+    },
     recursive: {
       alias: 'r',
       type: 'boolean',
-      default: false
+      default: false,
+      description: 'Add directory paths recursively'
     },
     trickle: {
       alias: 't',
@@ -154,7 +163,7 @@ module.exports = {
           list = [inPath]
         }
 
-        addPipeline(index, addStream, list, argv.wrapWithDirectory)
+        addPipeline(index, addStream, list, argv)
       })
     })
   }

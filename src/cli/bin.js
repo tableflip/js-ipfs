@@ -15,12 +15,6 @@ updateNotifier({
 }).notify()
 
 const cli = yargs
-  .option('q', {
-    alias: 'quiet',
-    desc: 'suppress output',
-    type: 'boolean',
-    coerce: (quiet) => { if (quiet) { utils.disablePrinting() } }
-  })
   .commandDir('commands')
   .demandCommand(1)
   .fail((msg, err, yargs) => {
