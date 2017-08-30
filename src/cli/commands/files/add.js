@@ -37,7 +37,16 @@ function checkPath (inPath, recursive) {
   return inPath
 }
 
-function addPipeline (index, addStream, list, wrapWithDirectory) {
+function addPipeline (index, addStream, list, argv) {
+  const {
+    wrapWithDirectory,
+    quiet,
+    quieter,
+    silent
+   } = argv
+
+  if (silent) utils.disablePrinting()
+
   pull(
     zip(
       pull.values(list),
@@ -69,16 +78,24 @@ function addPipeline (index, addStream, list, wrapWithDirectory) {
         throw err
       }
 
-      sortBy(added, 'path')
+      if (silent) {
+        utils.enablePrinting()
+        return
+      }
+
+      const messages = sortBy(added, 'path')
         .reverse()
         .map((file) => {
           const log = [ 'added', file.hash ]
 
-          if (file.path.length > 0) log.push(file.path)
+          if (!quiet && file.path.length > 0) log.push(file.path)
 
           return log.join(' ')
         })
-        .forEach((msg) => print(msg))
+
+      if (quieter) return print(messages.pop().replace('added ', ''))
+
+      messages.forEach((msg) => print(msg))
     })
   )
 }
@@ -89,10 +106,28 @@ module.exports = {
   describe: 'Add a file to IPFS using the UnixFS data format',
 
   builder: {
+    quiet: {
+      alias: 'q',
+      type: 'boolean',
+      default: false,
+      describe: 'Write minimal output'
+    },
+    quieter: {
+      alias: 'Q',
+      type: 'boolean',
+      default: false,
+      describe: 'Write only final hash'
+    },
+    silent: {
+      type: 'boolean',
+      default: false,
+      describe: 'Write no output'
+    },
     recursive: {
       alias: 'r',
       type: 'boolean',
-      default: false
+      default: false,
+      describe: 'Add directory paths recursively'
     },
     trickle: {
       alias: 't',
@@ -154,7 +189,7 @@ module.exports = {
           list = [inPath]
         }
 
-        addPipeline(index, addStream, list, argv.wrapWithDirectory)
+        addPipeline(index, addStream, list, argv)
       })
     })
   }
