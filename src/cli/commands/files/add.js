@@ -38,7 +38,11 @@ function checkPath (inPath, recursive) {
 }
 
 function addPipeline (index, addStream, list, argv) {
-  const { wrapWithDirectory, quiet } = argv
+  const {
+    wrapWithDirectory,
+    quiet,
+    quieter
+   } = argv
 
   pull(
     zip(
@@ -71,7 +75,7 @@ function addPipeline (index, addStream, list, argv) {
         throw err
       }
 
-      sortBy(added, 'path')
+      const messages = sortBy(added, 'path')
         .reverse()
         .map((file) => {
           const log = [ 'added', file.hash ]
@@ -80,7 +84,10 @@ function addPipeline (index, addStream, list, argv) {
 
           return log.join(' ')
         })
-        .forEach((msg) => print(msg))
+
+      if (quieter) return print(messages.pop().replace('added ', ''))
+
+      messages.forEach((msg) => print(msg))
     })
   )
 }
@@ -96,6 +103,12 @@ module.exports = {
       type: 'boolean',
       default: false,
       description: 'Write minimal output'
+    },
+    quieter: {
+      alias: 'Q',
+      type: 'boolean',
+      default: false,
+      description: 'Write only final hash'
     },
     recursive: {
       alias: 'r',

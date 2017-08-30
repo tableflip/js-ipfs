@@ -2,16 +2,10 @@
 'use strict'
 
 const expect = require('chai').expect
-const fs = require('fs')
-const path = require('path')
-const compareDir = require('dir-compare').compareSync
-const rimraf = require('rimraf').sync
 const runOnAndOff = require('../utils/on-and-off')
 
-describe('files', () => runOnAndOff((thing) => {
+describe('ipfs files add', () => runOnAndOff((thing) => {
   let ipfs
-  const readme = fs.readFileSync(path.join(process.cwd(), '/src/init-files/init-docs/readme'))
-                   .toString('utf-8')
 
   before(() => {
     ipfs = thing.ipfs
@@ -33,7 +27,7 @@ describe('files', () => runOnAndOff((thing) => {
       })
   })
 
-  it('add recursively test', () => {
+  it('add --recursive', () => {
     return ipfs('files add -r test/test-data/recursive-get-dir')
       .then((out) => {
         expect(out).to.eql([
@@ -127,7 +121,7 @@ describe('files', () => runOnAndOff((thing) => {
       })
   })
 
-  it('add and wrap with a directory', () => {
+  it('add --wrap-with-directory', () => {
     return ipfs('add -w src/init-files/init-docs/readme').then((out) => {
       expect(out).to.be.eql([
         'added QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB readme',
@@ -136,68 +130,19 @@ describe('files', () => runOnAndOff((thing) => {
     })
   })
 
-  it('cat', () => {
-    return ipfs('files cat QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB')
-      .then((out) => {
-        expect(out).to.eql(readme)
-      })
-  })
-
-  it('cat alias', () => {
-    return ipfs('cat QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB')
-      .then((out) => {
-        expect(out).to.eql(readme)
-      })
-  })
-
-  it('get', () => {
-    return ipfs('files get QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB')
+  it('add --quiet', () => {
+    return ipfs('files add -q src/init-files/init-docs/readme')
       .then((out) => {
         expect(out)
-          .to.eql('Saving file(s) QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB\n')
-
-        const file = path.join(process.cwd(), 'QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB')
-
-        expect(fs.readFileSync(file).toString()).to.eql(readme)
-
-        rimraf(file)
+          .to.eql('added QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB\n')
       })
   })
 
-  it('get alias', () => {
-    return ipfs('get QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB')
+  it.only('add --quieter', () => {
+    return ipfs('files add -Q -w test/test-data/hello test/test-data/node.json')
       .then((out) => {
         expect(out)
-          .to.eql('Saving file(s) QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB\n')
-
-        const file = path.join(process.cwd(), 'QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB')
-
-        expect(fs.readFileSync(file).toString()).to.eql(readme)
-
-        rimraf(file)
-      })
-  })
-
-  it('get recursively', () => {
-    const outDir = path.join(process.cwd(), 'QmYmW4HiZhotsoSqnv2o1oUusvkRM8b9RweBoH7ao5nki2')
-    rimraf(outDir)
-
-    return ipfs('files get QmYmW4HiZhotsoSqnv2o1oUusvkRM8b9RweBoH7ao5nki2')
-      .then((out) => {
-        expect(out).to.eql(
-          'Saving file(s) QmYmW4HiZhotsoSqnv2o1oUusvkRM8b9RweBoH7ao5nki2\n'
-        )
-
-        const outDir = path.join(process.cwd(), 'QmYmW4HiZhotsoSqnv2o1oUusvkRM8b9RweBoH7ao5nki2')
-        const expectedDir = path.join(process.cwd(), 'test', 'test-data', 'recursive-get-dir')
-
-        const compareResult = compareDir(outDir, expectedDir, {
-          compareContent: true,
-          compareSize: true
-        })
-
-        expect(compareResult.differences).to.equal(0)
-        rimraf(outDir)
+          .to.eql('QmYRMUVULBfj7WrdPESnwnyZmtayN6Sdrwh1nKcQ9QgQeZ\n')
       })
   })
 }))
