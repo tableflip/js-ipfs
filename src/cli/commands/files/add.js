@@ -8,6 +8,7 @@ const pull = require('pull-stream')
 const paramap = require('pull-paramap')
 const zip = require('pull-zip')
 const toPull = require('stream-to-pull-stream')
+const Progress = require('progress')
 const utils = require('../../utils')
 const print = require('../../utils').print
 
@@ -37,7 +38,12 @@ function checkPath (inPath, recursive) {
   return inPath
 }
 
-function addPipeline (index, addStream, list, wrapWithDirectory) {
+function addPipeline (index, addStream, list, bar, argv) {
+  const {
+    wrapWithDirectory,
+    progress
+  } = argv
+
   pull(
     zip(
       pull.values(list),
@@ -60,6 +66,9 @@ function addPipeline (index, addStream, list, wrapWithDirectory) {
       content: fs.createReadStream(file.originalPath)
     })),
     addStream,
+    pull.through((file) => {
+      if (progress) bar.tick(file.size)
+    }),
     pull.map((file) => ({
       hash: file.hash,
       path: wrapWithDirectory ? file.path.substring(WRAPPER.length) : file.path
@@ -89,6 +98,12 @@ module.exports = {
   describe: 'Add a file to IPFS using the UnixFS data format',
 
   builder: {
+    progress: {
+      alias: 'p',
+      type: 'boolean',
+      default: true,
+      describe: 'Stream progress data'
+    },
     recursive: {
       alias: 'r',
       type: 'boolean',
@@ -118,6 +133,12 @@ module.exports = {
   handler (argv) {
     const inPath = checkPath(argv.file, argv.recursive)
     const index = inPath.lastIndexOf('/') + 1
+    const bar = new Progress('[:bar]', {
+      complete: '=',
+      incomplete: ' ',
+      width: 20,
+      total: fs.statSync(argv.file).size
+    })
     const options = {
       strategy: argv.trickle ? 'trickle' : 'balanced',
       shardSplitThreshold: argv.enableShardingExperiment ? argv.shardSplitThreshold : Infinity
@@ -154,7 +175,7 @@ module.exports = {
           list = [inPath]
         }
 
-        addPipeline(index, addStream, list, argv.wrapWithDirectory)
+        addPipeline(index, addStream, list, bar, argv)
       })
     })
   }
