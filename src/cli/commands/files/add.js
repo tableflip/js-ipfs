@@ -110,24 +110,24 @@ module.exports = {
       alias: 'q',
       type: 'boolean',
       default: false,
-      description: 'Write minimal output'
+      describe: 'Write minimal output'
     },
     quieter: {
       alias: 'Q',
       type: 'boolean',
       default: false,
-      description: 'Write only final hash'
+      describe: 'Write only final hash'
     },
     silent: {
       type: 'boolean',
       default: false,
-      description: 'Write no output'
+      describe: 'Write no output'
     },
     recursive: {
       alias: 'r',
       type: 'boolean',
       default: false,
-      description: 'Add directory paths recursively'
+      describe: 'Add directory paths recursively'
     },
     trickle: {
       alias: 't',
