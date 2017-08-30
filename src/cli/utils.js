@@ -71,6 +71,7 @@ exports.getRepoPath = () => {
 
 let visible = true
 exports.disablePrinting = () => { visible = false }
+exports.enablePrinting = () => { visible = true }
 
 exports.print = (msg, newline) => {
   if (newline === undefined) {

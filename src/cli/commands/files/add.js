@@ -41,8 +41,11 @@ function addPipeline (index, addStream, list, argv) {
   const {
     wrapWithDirectory,
     quiet,
-    quieter
+    quieter,
+    silent
    } = argv
+
+  if (silent) utils.disablePrinting()
 
   pull(
     zip(
@@ -73,6 +76,11 @@ function addPipeline (index, addStream, list, argv) {
     pull.collect((err, added) => {
       if (err) {
         throw err
+      }
+
+      if (silent) {
+        utils.enablePrinting()
+        return
       }
 
       const messages = sortBy(added, 'path')
@@ -109,6 +117,11 @@ module.exports = {
       type: 'boolean',
       default: false,
       description: 'Write only final hash'
+    },
+    silent: {
+      type: 'boolean',
+      default: false,
+      description: 'Write no output'
     },
     recursive: {
       alias: 'r',
