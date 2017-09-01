@@ -9,6 +9,8 @@ const paramap = require('pull-paramap')
 const zip = require('pull-zip')
 const toPull = require('stream-to-pull-stream')
 const Progress = require('progress')
+const getFolderSize = require('get-folder-size')
+const byteman = require('byteman')
 const utils = require('../../utils')
 const print = require('../../utils').print
 
@@ -38,12 +40,27 @@ function checkPath (inPath, recursive) {
   return inPath
 }
 
-function addPipeline (index, addStream, list, bar, argv) {
-  const {
-    wrapWithDirectory,
-    progress
-  } = argv
+function getTotalBytes (path, recursive) {
+  return recursive ? getFolderSize(path).size : fs.statSync(path).size
+}
 
+function createProgressBar (totalBytes) {
+  const totalDisplay = byteman(totalBytes)
+  const barFormat = `:current KB / ${totalDisplay} [:bar] :percent :etas `
+
+  // 2340 KB / 34MB [========               ] 48% 5.8s //
+
+  return new Progress(barFormat, {
+    complete: '=',
+    incomplete: ' ',
+    clear: true,
+    width: 40,
+    stream: process.stdout,
+    total: totalBytes
+  })
+}
+
+function addPipeline (index, addStream, list, wrapWithDirectory) {
   pull(
     zip(
       pull.values(list),
@@ -66,9 +83,6 @@ function addPipeline (index, addStream, list, bar, argv) {
       content: fs.createReadStream(file.originalPath)
     })),
     addStream,
-    pull.through((file) => {
-      if (progress) bar.tick(file.size)
-    }),
     pull.map((file) => ({
       hash: file.hash,
       path: wrapWithDirectory ? file.path.substring(WRAPPER.length) : file.path
@@ -133,12 +147,7 @@ module.exports = {
   handler (argv) {
     const inPath = checkPath(argv.file, argv.recursive)
     const index = inPath.lastIndexOf('/') + 1
-    const bar = new Progress('[:bar]', {
-      complete: '=',
-      incomplete: ' ',
-      width: 20,
-      total: fs.statSync(argv.file).size
-    })
+
     const options = {
       strategy: argv.trickle ? 'trickle' : 'balanced',
       shardSplitThreshold: argv.enableShardingExperiment ? argv.shardSplitThreshold : Infinity
@@ -147,9 +156,17 @@ module.exports = {
     if (argv.enableShardingExperiment && utils.isDaemonOn()) {
       throw new Error('Error: Enabling the sharding experiment should be done on the daemon')
     }
+
     const ipfs = argv.ipfs
 
+    if (argv.progress) {
+      const totalBytes = getTotalBytes(argv.file, argv.recursive)
+      const bar = createProgressBar(totalBytes)
+      options.progress = bar.tick.bind(bar)
+    }
+
     // TODO: revist when interface-ipfs-core exposes pull-streams
+
     let createAddStream = (cb) => {
       ipfs.files.createAddStream(options, (err, stream) => {
         cb(err, err ? null : toPull.transform(stream))
@@ -175,7 +192,7 @@ module.exports = {
           list = [inPath]
         }
 
-        addPipeline(index, addStream, list, bar, argv)
+        addPipeline(index, addStream, list, argv.wrapWithDirectory)
       })
     })
   }
