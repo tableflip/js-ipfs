@@ -121,6 +121,11 @@ module.exports = {
     'cid-version': {
       type: 'integer',
       describe: 'Cid version. Non-zero value will change default of \'raw-leaves\' to true. (experimental)'
+    },
+    hash: {
+      type: 'string',
+      // TODO: choices: [],
+      describe: 'Hash function to use. Will set Cid version to 1 if used. (experimental)'
     }
   },
 
@@ -131,7 +136,8 @@ module.exports = {
       strategy: argv.trickle ? 'trickle' : 'balanced',
       shardSplitThreshold: argv.enableShardingExperiment ? argv.shardSplitThreshold : Infinity,
       'cid-version': argv['cid-version'],
-      'raw-leaves': argv['raw-leaves']
+      'raw-leaves': argv['raw-leaves'],
+      hashAlg: argv.hash
     }
 
     // Temporary restriction on raw-leaves:
