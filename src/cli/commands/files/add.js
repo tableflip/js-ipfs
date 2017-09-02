@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const path = require('path')
+const async = require('async')
 const glob = require('glob')
 const sortBy = require('lodash.sortby')
 const pull = require('pull-stream')
@@ -40,21 +41,24 @@ function checkPath (inPath, recursive) {
   return inPath
 }
 
-function getTotalBytes (path, recursive) {
-  return recursive ? getFolderSize(path).size : fs.statSync(path).size
+function getTotalBytes (path, recursive, cb) {
+  if (recursive) {
+    getFolderSize(path, cb)
+  } else {
+    fs.stat(path, (err, stat) => cb(err, stat.size))
+  }
 }
 
 function createProgressBar (totalBytes) {
-  const totalDisplay = byteman(totalBytes)
-  const barFormat = `:current KB / ${totalDisplay} [:bar] :percent :etas `
+  const totalDisplay = byteman(totalBytes, 1, 'MB')
+  const barFormat = `:size MB / ${totalDisplay} [:bar] :percent :etas`
 
-  // 2340 KB / 34MB [========               ] 48% 5.8s //
-
+  // 2340 MB / 34 MB [========               ] 48% 5.8s //
   return new Progress(barFormat, {
-    complete: '=',
+    complete : '=',
     incomplete: ' ',
     clear: true,
-    width: 40,
+    width: 60,
     stream: process.stdout,
     total: totalBytes
   })
@@ -145,55 +149,68 @@ module.exports = {
   },
 
   handler (argv) {
-    const inPath = checkPath(argv.file, argv.recursive)
+    const {
+      file,
+      recursive,
+      progress,
+      wrapWithDirectory,
+      trickle,
+      enableShardingExperiment,
+      shardSplitThreshold
+    } = argv
+
+    const inPath = checkPath(file, recursive)
     const index = inPath.lastIndexOf('/') + 1
 
     const options = {
-      strategy: argv.trickle ? 'trickle' : 'balanced',
-      shardSplitThreshold: argv.enableShardingExperiment ? argv.shardSplitThreshold : Infinity
+      strategy: trickle ? 'trickle' : 'balanced',
+      shardSplitThreshold: enableShardingExperiment ? shardSplitThreshold : Infinity
     }
 
-    if (argv.enableShardingExperiment && utils.isDaemonOn()) {
+    if (enableShardingExperiment && utils.isDaemonOn()) {
       throw new Error('Error: Enabling the sharding experiment should be done on the daemon')
     }
 
     const ipfs = argv.ipfs
 
-    if (argv.progress) {
-      const totalBytes = getTotalBytes(argv.file, argv.recursive)
-      const bar = createProgressBar(totalBytes)
-      options.progress = bar.tick.bind(bar)
-    }
+    let list = []
 
-    // TODO: revist when interface-ipfs-core exposes pull-streams
+    async.waterfall([
+      (next) => glob(path.join(inPath, '/**/*'), next),
+      (globResult, next) => {
+        list = globResult.length === 0 ? [inPath] : globResult
 
-    let createAddStream = (cb) => {
-      ipfs.files.createAddStream(options, (err, stream) => {
-        cb(err, err ? null : toPull.transform(stream))
-      })
-    }
+        getTotalBytes(inPath, recursive, next)
+      },
+      (totalBytes, next) => {
+        if (progress) {
+          // create a new instance of a progress bar and
+          // pass the tick function into the `addStream` as an option
 
-    if (typeof ipfs.files.createAddPullStream === 'function') {
-      createAddStream = (cb) => {
-        cb(null, ipfs.files.createAddPullStream(options))
-      }
-    }
-
-    createAddStream((err, addStream) => {
-      if (err) {
-        throw err
-      }
-
-      glob(path.join(inPath, '/**/*'), (err, list) => {
-        if (err) {
-          throw err
-        }
-        if (list.length === 0) {
-          list = [inPath]
+          const bar = createProgressBar(totalBytes)
+          options.progress = bar.tick.bind(bar)
         }
 
-        addPipeline(index, addStream, list, argv.wrapWithDirectory)
-      })
+        // TODO: revist when interface-ipfs-core exposes pull-streams
+
+        let createAddStream = (cb) => {
+          ipfs.files.createAddStream(options, (err, stream) => {
+            cb(err, err ? null : toPull.transform(stream))
+          })
+        }
+
+        if (typeof ipfs.files.createAddPullStream === 'function') {
+          createAddStream = (cb) => {
+            cb(null, ipfs.files.createAddPullStream(options))
+          }
+        }
+
+        createAddStream(next)
+      }
+    ], (err, addStream) => {
+      if (err) throw err
+
+      addPipeline(index, addStream, list, wrapWithDirectory)
     })
   }
 }
