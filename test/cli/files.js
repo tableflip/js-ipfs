@@ -8,7 +8,7 @@ const compareDir = require('dir-compare').compareSync
 const rimraf = require('rimraf').sync
 const runOnAndOff = require('../utils/on-and-off')
 
-describe('files', () => runOnAndOff((thing) => {
+describe.only('files', () => runOnAndOff((thing) => {
   let ipfs
   const readme = fs.readFileSync(path.join(process.cwd(), '/src/init-files/init-docs/readme'))
                    .toString('utf-8')
@@ -128,12 +128,13 @@ describe('files', () => runOnAndOff((thing) => {
   })
 
   it('add and wrap with a directory', () => {
-    return ipfs('add -w src/init-files/init-docs/readme').then((out) => {
-      expect(out).to.be.eql([
-        'added QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB readme',
-        'added QmapdaVPjHXdcswef82FnGQUauMNpk9xYFkLDZKgAxhMwq'
-      ].join('\n') + '\n')
-    })
+    return ipfs('add -w src/init-files/init-docs/readme')
+      .then((out) => {
+        expect(out).to.be.eql([
+          'added QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB readme',
+          'added QmapdaVPjHXdcswef82FnGQUauMNpk9xYFkLDZKgAxhMwq'
+        ].join('\n') + '\n')
+      })
   })
 
   it('cat', () => {
