@@ -50,15 +50,13 @@ function getTotalBytes (path, recursive, cb) {
 }
 
 function createProgressBar (totalBytes) {
-  const totalDisplay = byteman(totalBytes, 1, 'MB')
-  const barFormat = `:size MB / ${totalDisplay} [:bar] :percent :etas`
+  const total = byteman(totalBytes, 2, 'MB')
+  const barFormat = `:progress / ${total} [:bar] :percent :etas`
 
-  // 2340 MB / 34 MB [========               ] 48% 5.8s //
+  // 16 MB / 34 MB [===========             ] 48% 5.8s //
   return new Progress(barFormat, {
-    complete : '=',
     incomplete: ' ',
     clear: true,
-    width: 60,
     stream: process.stdout,
     total: totalBytes
   })
@@ -174,6 +172,7 @@ module.exports = {
     const ipfs = argv.ipfs
 
     let list = []
+    let currentBytes = 0
 
     async.waterfall([
       (next) => glob(path.join(inPath, '/**/*'), next),
@@ -184,11 +183,11 @@ module.exports = {
       },
       (totalBytes, next) => {
         if (progress) {
-          // create a new instance of a progress bar and
-          // pass the tick function into the `addStream` as an option
-
           const bar = createProgressBar(totalBytes)
-          options.progress = bar.tick.bind(bar)
+          options.progress = function (byteLength) {
+            currentBytes += byteLength
+            bar.tick(byteLength, {progress: byteman(currentBytes, 2, 'MB')})
+          }
         }
 
         // TODO: revist when interface-ipfs-core exposes pull-streams
