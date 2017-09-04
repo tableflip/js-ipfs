@@ -4,7 +4,7 @@
 const expect = require('chai').expect
 const runOnAndOff = require('../utils/on-and-off')
 
-describe('ipfs files add', () => runOnAndOff((thing) => {
+describe.only('ipfs files add', () => runOnAndOff((thing) => {
   let ipfs
 
   before(() => {

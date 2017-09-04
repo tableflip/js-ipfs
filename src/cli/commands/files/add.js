@@ -45,8 +45,6 @@ function addPipeline (index, addStream, list, argv) {
     silent
    } = argv
 
-  if (silent) utils.disablePrinting()
-
   pull(
     zip(
       pull.values(list),
@@ -78,10 +76,8 @@ function addPipeline (index, addStream, list, argv) {
         throw err
       }
 
-      if (silent) {
-        utils.enablePrinting()
-        return
-      }
+      if (silent) return
+      if (quieter) return print(added.pop().hash)
 
       const messages = sortBy(added, 'path')
         .reverse()
@@ -92,8 +88,6 @@ function addPipeline (index, addStream, list, argv) {
 
           return log.join(' ')
         })
-
-      if (quieter) return print(messages.pop().replace('added ', ''))
 
       messages.forEach((msg) => print(msg))
     })

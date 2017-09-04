@@ -15,6 +15,12 @@ updateNotifier({
 }).notify()
 
 const cli = yargs
+  .option('silent', {
+    desc: 'Write no output',
+    type: 'boolean',
+    default: false,
+    coerce: ('silent', silent => silent ? utils.disablePrinting() : silent)
+  })
   .commandDir('commands')
   .demandCommand(1)
   .fail((msg, err, yargs) => {
@@ -36,7 +42,6 @@ aliases.forEach((alias) => {
 })
 
 const args = process.argv.slice(2)
-
 // Need to skip to avoid locking as these commands
 // don't require a daemon
 if (args[0] === 'daemon' || args[0] === 'init') {
